@@ -1,0 +1,168 @@
+/* Day / Night toggle
+   Usage: <button class="dn-toggle" role="switch" aria-checked="false"> ... </button>
+   Scale the whole thing with --dn-size (track height). */
+
+.dn-toggle {
+  --dn-size: 144px;                       /* track height */
+  --dn-w: calc(var(--dn-size) * 2.5);     /* track width */
+  --dn-pad: calc(var(--dn-size) * 0.1);   /* knob inset */
+  --dn-knob: calc(var(--dn-size) - var(--dn-pad) * 2);
+  --dn-travel: calc(var(--dn-w) - var(--dn-size));
+  --dn-ease: cubic-bezier(0.65, 0, 0.25, 1);
+  --dn-dur: 650ms;
+
+  /* day palette */
+  --dn-sky-day: #4672b3;
+  --dn-sun: #f1be47;
+  --dn-sun-shade: #e2a92f;
+  --dn-frame-day: #f1f1f1;
+
+  /* night palette */
+  --dn-sky-night: #1b1b21;
+  --dn-moon: #d4d6dc;
+  --dn-moon-light: #eceef1;
+  --dn-crater: #8e95a8;
+  --dn-frame-night: #2c2c33;
+
+  position: relative;
+  display: inline-block;
+  width: calc(var(--dn-w) + var(--dn-size) * 0.14);
+  height: calc(var(--dn-size) * 1.14);
+  padding: calc(var(--dn-size) * 0.07);
+  border: 0;
+  border-radius: 999px;
+  background: var(--dn-frame-day);
+  box-shadow:
+    0 calc(var(--dn-size) * 0.04) calc(var(--dn-size) * 0.12) rgb(0 0 0 / 0.12),
+    inset 0 1px 0 rgb(255 255 255 / 0.9);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--dn-dur) var(--dn-ease), box-shadow var(--dn-dur) var(--dn-ease);
+}
+
+.dn-toggle:focus-visible {
+  outline: 3px solid #6aa0ff;
+  outline-offset: 4px;
+}
+
+.dn-track {
+  position: relative;
+  display: block;
+  width: var(--dn-w);
+  height: var(--dn-size);
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--dn-sky-day);
+  box-shadow:
+    inset 0 calc(var(--dn-size) * 0.03) calc(var(--dn-size) * 0.06) rgb(0 0 0 / 0.25),
+    inset 0 -1px 0 rgb(255 255 255 / 0.15);
+  isolation: isolate;
+  transition: background var(--dn-dur) var(--dn-ease);
+}
+
+/* Concentric light bands that follow the knob */
+.dn-halo {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--dn-size) / 2);
+  width: 0;
+  height: 0;
+  transform: translateX(0);
+  transition: transform var(--dn-dur) var(--dn-ease);
+  z-index: 0;
+}
+.dn-halo i {
+  position: absolute;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.09);
+  transform: translate(-50%, -50%);
+}
+.dn-halo i:nth-child(1) { width: calc(var(--dn-size) * 1.55); height: calc(var(--dn-size) * 1.55); }
+.dn-halo i:nth-child(2) { width: calc(var(--dn-size) * 2.25); height: calc(var(--dn-size) * 2.25); }
+.dn-halo i:nth-child(3) { width: calc(var(--dn-size) * 2.95); height: calc(var(--dn-size) * 2.95); }
+.dn-halo i:nth-child(4) { width: calc(var(--dn-size) * 3.65); height: calc(var(--dn-size) * 3.65); }
+
+/* Stars (night) */
+.dn-stars {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0;
+  transform: translateY(-30%);
+  transition: opacity var(--dn-dur) var(--dn-ease), transform var(--dn-dur) var(--dn-ease);
+}
+.dn-stars svg { width: 100%; height: 100%; display: block; }
+
+/* Clouds (day) */
+.dn-clouds {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  transform: translateY(0);
+  transition: transform var(--dn-dur) var(--dn-ease);
+}
+.dn-clouds svg { width: 100%; height: 100%; display: block; }
+
+/* Knob: sun that becomes the moon */
+.dn-knob {
+  position: absolute;
+  top: var(--dn-pad);
+  left: var(--dn-pad);
+  width: var(--dn-knob);
+  height: var(--dn-knob);
+  border-radius: 50%;
+  z-index: 3;
+  background: radial-gradient(circle at 35% 30%, #f6ca5c 0%, var(--dn-sun) 55%, var(--dn-sun-shade) 100%);
+  box-shadow:
+    0 calc(var(--dn-size) * 0.03) calc(var(--dn-size) * 0.08) rgb(0 0 0 / 0.3),
+    inset 0 -2px 3px rgb(0 0 0 / 0.1),
+    inset 0 2px 2px rgb(255 255 255 / 0.35);
+  transform: translateX(0);
+  transition: transform var(--dn-dur) var(--dn-ease);
+}
+.dn-knob::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--dn-moon-light) 0%, var(--dn-moon) 60%, #b9bcc4 100%);
+  box-shadow: inset 0 2px 2px rgb(255 255 255 / 0.6), inset 0 -2px 3px rgb(0 0 0 / 0.12);
+  opacity: 0;
+  transition: opacity var(--dn-dur) var(--dn-ease);
+}
+.dn-crater {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--dn-crater);
+  box-shadow: inset 0 2px 3px rgb(0 0 0 / 0.25);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity var(--dn-dur) var(--dn-ease), transform var(--dn-dur) var(--dn-ease);
+}
+.dn-crater:nth-child(1) { width: 17%; height: 17%; left: 42%; top: 15%; }
+.dn-crater:nth-child(2) { width: 34%; height: 34%; left: 20%; top: 52%; }
+.dn-crater:nth-child(3) { width: 25%; height: 25%; left: 64%; top: 52%; }
+
+/* ---------- Night state ---------- */
+.dn-toggle[aria-checked="true"] {
+  background: var(--dn-frame-night);
+  box-shadow:
+    0 calc(var(--dn-size) * 0.04) calc(var(--dn-size) * 0.12) rgb(0 0 0 / 0.4),
+    inset 0 1px 0 rgb(255 255 255 / 0.06);
+}
+.dn-toggle[aria-checked="true"] .dn-track { background: var(--dn-sky-night); }
+.dn-toggle[aria-checked="true"] .dn-halo { transform: translateX(var(--dn-travel)); }
+.dn-toggle[aria-checked="true"] .dn-knob { transform: translateX(var(--dn-travel)); }
+.dn-toggle[aria-checked="true"] .dn-knob::before { opacity: 1; }
+.dn-toggle[aria-checked="true"] .dn-crater { opacity: 1; transform: scale(1); }
+.dn-toggle[aria-checked="true"] .dn-clouds { transform: translateY(110%); }
+.dn-toggle[aria-checked="true"] .dn-stars { opacity: 1; transform: translateY(0); }
+
+/* Small press feedback */
+.dn-toggle:active .dn-knob { transition-duration: 150ms; }
+.dn-toggle:not([aria-checked="true"]):active .dn-knob { transform: scale(0.96); }
+.dn-toggle[aria-checked="true"]:active .dn-knob { transform: translateX(var(--dn-travel)) scale(0.96); }
+
+@media (prefers-reduced-motion: reduce) {
+  .dn-toggle, .dn-toggle * , .dn-toggle *::before { transition-duration: 1ms !important; }
+}
